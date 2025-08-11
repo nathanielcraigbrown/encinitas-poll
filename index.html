@@ -5,141 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Post-Site Visit Lunch in Encinitas</title>
 
-    <!-- Coastal font -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
       :root{
-        --sky: #e9f6ff;
-        --sea: #bdf0ff;
-        --sand: #fff7e6;
-        --ocean: #0a7fb0;
-        --ocean-2:#1397c6;
-        --coral:#ff6f61;
-        --ink:#0f172a;
-        --card: rgba(255,255,255,.86);
-        --line:#e7eef4;
-        --shadow: 0 10px 28px rgba(10,127,176,.10);
-        --radius: 18px;
+        --sky:#e9f6ff; --sea:#bdf0ff; --sand:#fff7e6;
+        --ocean:#0a7fb0; --ocean-2:#1397c6; --line:#e7eef4;
+        --card: rgba(255,255,255,.86); --shadow:0 10px 28px rgba(10,127,176,.10);
+        --radius:18px;
       }
-
-      /* Background: sky to sand with subtle sheen */
       body{
-        margin:0;
-        color:#123;
-        font-family: Nunito, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+        margin:0; font-family:Nunito, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
         background:
-          radial-gradient(1200px 600px at 50% -80px, #ffffff 0%, transparent 60%),
+          radial-gradient(1200px 600px at 50% -80px, #fff 0%, transparent 60%),
           linear-gradient(180deg, var(--sky) 0%, var(--sea) 45%, var(--sand) 100%);
-        min-height:100vh;
+        min-height:100vh; color:#0c2a3a;
       }
+      .wrap{ max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+      header{ display:flex; flex-direction:column; gap:8px; margin:8px 0 22px; }
+      h1{ margin:0; font-weight:800; letter-spacing:.2px; font-size:clamp(1.6rem,2.2vw + 1rem,2.2rem); }
+      .tag{ font-size:.95rem; color:#2a5366; }
 
-      .wrap{
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 28px 20px 80px;
-        position: relative;
-      }
-
-      header{
-        display:flex;
-        flex-direction:column;
-        gap:8px;
-        margin: 8px 0 22px;
-      }
-      h1{
-        margin:0;
-        font-weight:800;
-        letter-spacing:.2px;
-        font-size: clamp(1.6rem, 2.2vw + 1rem, 2.2rem);
-        color:#0c2a3a;
-      }
-      .tag{
-        display:inline-flex; align-items:center; gap:.5rem;
-        font-size:.95rem; color:#2a5366;
-      }
+      .grid{ display:grid; grid-template-columns:1fr; gap:16px; }
+      @media (min-width:880px){ .grid{ grid-template-columns:1fr 1fr; } }
 
       .card{
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 16px;
-        backdrop-filter: saturate(1.2) blur(2px);
+        background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+        box-shadow:var(--shadow); padding:16px; backdrop-filter:saturate(1.2) blur(2px);
       }
+      .section-title{ font-size:1.05rem; font-weight:800; color:#164056; margin:0 0 10px; }
+      .hint{ margin:6px 2px 14px; font-size:.95rem; color:#355a6c; }
 
-      .grid{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:16px;
-      }
-      @media (min-width: 880px){
-        .grid{ grid-template-columns: 1fr 1fr; }
-      }
-
-      .hint{
-        margin: 6px 2px 14px;
-        font-size: .95rem;
-        color:#355a6c;
-      }
-
-      /* Rank list */
-      #options{
-        list-style:none; margin:0; padding:0;
-      }
+      #options{ list-style:none; margin:0; padding:0; }
       #options li{
         display:flex; align-items:center; justify-content:space-between;
-        padding:14px 14px 14px 48px;
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        background:#fff;
-        position: relative;
-        user-select:none;
+        padding:14px 14px 14px 48px; border:1px solid var(--line); border-radius:14px;
+        background:#fff; position:relative; user-select:none;
       }
       #options li + li{ margin-top:10px; }
       #options li::before{
-        content:"≡";
-        position:absolute; left:14px; top:50%; transform:translateY(-50%);
-        font-weight:700; letter-spacing:2px;
-        color:#7aa6b8; opacity:.9;
+        content:"≡"; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+        font-weight:800; letter-spacing:2px; color:#7aa6b8; opacity:.9;
       }
-      #options li.dragging{ opacity:.7; transform: scale(.995); }
+      #options li.dragging{ opacity:.7; transform:scale(.995); }
 
-      /* Buttons */
       .btn{
         appearance:none; border:0; cursor:pointer; width:100%;
-        padding:12px 16px; border-radius:14px; font-weight:800;
-        color:#fff; letter-spacing:.3px;
-        background: linear-gradient(135deg, var(--ocean) 0%, var(--ocean-2) 100%);
-        box-shadow: 0 6px 18px rgba(10,127,176,.22);
-        transition: transform .06s ease, box-shadow .15s ease, opacity .2s ease;
+        padding:12px 16px; border-radius:14px; font-weight:800; color:#fff; letter-spacing:.3px;
+        background:linear-gradient(135deg, var(--ocean) 0%, var(--ocean-2) 100%);
+        box-shadow:0 6px 18px rgba(10,127,176,.22);
+        transition:transform .06s ease, box-shadow .15s ease, opacity .2s ease;
       }
-      .btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 22px rgba(10,127,176,.26); }
+      .btn:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(10,127,176,.26); }
       .btn:disabled{ opacity:.55; cursor:not-allowed; }
 
-      .section-title{
-        font-size:1.05rem; font-weight:800; color:#164056; margin:0 0 10px;
-        display:flex; align-items:center; gap:.5rem;
-      }
+      .results{ display:flex; flex-direction:column; gap:12px; }
+      .results-round{ border:1px dashed var(--line); border-radius:14px; padding:12px; background:#fff; }
+      .candidate-count{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f2f6f9; }
+      .candidate-count:last-child{ border-bottom:0; }
 
-      .results{
-        display:flex; flex-direction:column; gap:12px;
-      }
-      .results-round{
-        border:1px dashed var(--line);
-        border-radius: 14px;
-        padding:12px;
-        background:#fff;
-      }
-      .kv{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f2f6f9; }
-      .kv:last-child{ border-bottom:0; }
-
-      /* Decorative wave footer */
-      .wave{
-        position: fixed;
-        left:0; right:0; bottom:-1px; z-index:-1;
-        pointer-events:none;
-      }
+      .wave{ position:fixed; left:0; right:0; bottom:-1px; z-index:-1; pointer-events:none; }
       .wave svg{ width:100%; display:block; }
     </style>
   </head>
@@ -151,7 +76,6 @@
       </header>
 
       <div class="grid">
-        <!-- Ballot -->
         <section class="card">
           <div class="section-title">Your Ballot</div>
           <p class="hint">Top pick goes first. Drag to reorder.</p>
@@ -166,7 +90,6 @@
           </div>
         </section>
 
-        <!-- Results -->
         <section class="card">
           <div class="section-title">Live Results</div>
           <p id="result-summary" class="hint">No votes yet.</p>
@@ -175,7 +98,6 @@
       </div>
     </div>
 
-    <!-- Subtle wave at the shoreline -->
     <div class="wave" aria-hidden="true">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
         <path d="M0,32 C240,96 480,0 720,32 C960,64 1200,96 1440,48 L1440,120 L0,120 Z" fill="#fff7e6" opacity="1"/>
@@ -183,17 +105,8 @@
       </svg>
     </div>
 
-    <!-- Sortable for drag-and-drop -->
+    <!-- Sortable for drag-and-drop (only the library; no second init here) -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-    <!-- App logic (unchanged) -->
     <script type="module" src="./script.js"></script>
-
-    // tiny enhancement: add/remove dragging class
-  const list = document.getElementById('options');
-  new Sortable(list, {
-    animation: 150,
-    ghostClass: 'dragging'
-  });
-</script>
   </body>
 </html>
