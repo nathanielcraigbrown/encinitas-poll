@@ -1,4 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+function pluralize(n, one, many = null) {
+  return n === 1 ? one : (many ?? one + 's');
+}
 
 /*
   Supabase configuration. Replace these values with your own project URL
@@ -122,8 +125,27 @@ function renderResults(rounds) {
   rounds.forEach((roundData) => {
     const div = document.createElement('div');
     div.classList.add('results-round');
+
     const header = document.createElement('h3');
-    header.textContent = `Round ${roundData.round} (n=${roundData.total} ballots)`;
+    const ballotsLabel = `${roundData.total} ${pluralize(roundData.total, 'ballot')}`;
+    header.textContent = `Round ${roundData.round} • ${ballotsLabel}`;
+    div.appendChild(header);
+
+    const sorted = Object.entries(roundData.counts).sort((a, b) => b[1] - a[1]);
+
+    sorted.forEach(([cand, count]) => {
+      const row = document.createElement('div');
+      row.classList.add('candidate-count');
+      // One readable line: “Name — 2 votes”
+      row.textContent = `${cand} — ${count} ${pluralize(count, 'vote')}`;
+      div.appendChild(row);
+    });
+
+    resultsContainer.appendChild(div);
+  });
+}
+
+
     div.appendChild(header);
     // Sort candidates by vote count descending for display
     const sorted = Object.entries(roundData.counts).sort((a, b) => b[1] - a[1]);
