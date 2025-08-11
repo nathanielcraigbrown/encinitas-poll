@@ -10,6 +10,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const optionsList = document.getElementById('options');
 const submitButton = document.getElementById('submit');
 const clearButton = document.getElementById('clear');
+const resetPollButton = document.getElementById('reset-poll');
 const resultsContainer = document.getElementById('results');
 const resultSummary = document.getElementById('result-summary');
 const rankHint = document.getElementById('rank-hint');
@@ -18,100 +19,76 @@ const rankHint = document.getElementById('rank-hint');
 function pluralize(n, one, many = null) {
   return n === 1 ? one : (many ?? one + 's');
 }
-
-function clamp(n, min, max) {
-  if (Number.isNaN(n)) return n;
-  return Math.max(min, Math.min(max, n));
+function getSelects() {
+  return Array.from(optionsList.querySelectorAll('select.rank-select'));
 }
 
-function getInputs() {
-  return Array.from(optionsList.querySelectorAll('.rank-input'));
-}
-
-// Validate and (optionally) return ranking array.
-// If invalid, show friendly hint and highlight issues; return null.
+// Build ranking array from selects; validate 1..N each used once.
+// Returns ranking array or null if invalid (and paints UI).
 function readRankingOrNull() {
-  const items = Array.from(optionsList.children); // <li> nodes
+  const items = Array.from(optionsList.children);
   const N = items.length;
-  const inputs = getInputs();
-  const values = inputs.map((inp) => {
-    const v = parseInt(inp.value, 10);
-    if (!Number.isFinite(v)) return NaN;
-    return clamp(v, 1, N);
+  const selects = getSelects();
+
+  const values = selects.map((sel) => {
+    const v = sel.value.trim();
+    return v === '' ? NaN : parseInt(v, 10);
   });
 
-  // basic bounds check
+  // Check bounds and uniqueness
   let ok = values.every((v) => Number.isInteger(v) && v >= 1 && v <= N);
-
-  // uniqueness check
-  const seen = new Map(); // rank -> count
+  const seen = new Map();
   for (const v of values) {
     if (!Number.isFinite(v)) { ok = false; break; }
     seen.set(v, (seen.get(v) || 0) + 1);
   }
-  const duplicates = Array.from(seen.entries()).filter(([, c]) => c > 1).map(([r]) => r);
+  const duplicates = Array.from(seen.entries()).filter(([,c]) => c > 1).map(([r]) => r);
   if (duplicates.length) ok = false;
 
-  // UI feedback: mark inputs
-  inputs.forEach((inp, i) => {
-    inp.classList.remove('ok', 'bad');
+  // UI feedback
+  selects.forEach((sel, i) => {
+    sel.classList.remove('ok','bad');
     const v = values[i];
     if (!Number.isFinite(v) || v < 1 || v > N) {
-      if (inp.value !== '') inp.classList.add('bad');
+      if (sel.value !== '') sel.classList.add('bad');
     } else if (seen.get(v) > 1) {
-      inp.classList.add('bad');
+      sel.classList.add('bad');
     } else {
-      inp.classList.add('ok');
+      sel.classList.add('ok');
     }
   });
 
   if (!ok) {
-    rankHint.textContent = `Please use each number 1–${N} exactly once. No repeats and no blanks.`;
+    rankHint.textContent = `Please choose each number 1–${N} exactly once. No repeats and no blanks.`;
     rankHint.style.color = 'var(--warn)';
     return null;
   }
 
-  // Build ranking array: sort by numeric rank ascending
+  // Sort candidates by chosen rank
   const pairs = items.map((li, i) => ({
     name: li.getAttribute('data-value'),
     rank: values[i],
-  }));
-  pairs.sort((a, b) => a.rank - b.rank);
-  const ranking = pairs.map((p) => p.name);
+  })).sort((a,b) => a.rank - b.rank);
 
   rankHint.textContent = 'Looks good — you can submit!';
   rankHint.style.color = 'var(--ok)';
-  return ranking;
+  return pairs.map(p => p.name);
 }
 
-// Events
-getInputs().forEach((inp) => {
-  inp.addEventListener('input', () => {
-    // live-validate as they type
-    readRankingOrNull();
-  });
-  // keep values within bounds
-  inp.addEventListener('change', () => {
-    const N = optionsList.children.length;
-    const v = parseInt(inp.value, 10);
-    if (Number.isFinite(v)) inp.value = String(clamp(v, 1, N));
-    readRankingOrNull();
-  });
-});
+// Wire up select validation
+getSelects().forEach((sel) => sel.addEventListener('change', readRankingOrNull));
 
+// Clear form
 clearButton.addEventListener('click', () => {
-  getInputs().forEach((inp) => {
-    inp.value = '';
-    inp.classList.remove('ok', 'bad');
-  });
-  rankHint.textContent = 'Tip: 1 = top choice, 4 = last choice. Use each number once.';
+  getSelects().forEach((sel) => { sel.value = ''; sel.classList.remove('ok','bad'); });
+  rankHint.textContent = 'Tip: 1 = top choice, 4 = last choice. No repeats.';
   rankHint.style.color = 'var(--muted)';
 });
 
 // Submit vote
 submitButton.addEventListener('click', async () => {
   const ranking = readRankingOrNull();
-  if (!ranking) return; // invalid — hint already shown
+  if (!ranking) return;
 
   submitButton.disabled = true;
   try {
@@ -125,7 +102,7 @@ submitButton.addEventListener('click', async () => {
   }
 });
 
-// Compute & render results (Instant-Runoff Voting)
+// IRV tally + render
 async function updateResults() {
   const { data: votes, error } = await supabase.from('votes').select('*');
   if (error) {
@@ -133,7 +110,6 @@ async function updateResults() {
     resultsContainer.textContent = 'Error loading results';
     return;
   }
-
   const ballots = (votes || []).map((row) => row.ballot).filter(Boolean);
   if (ballots.length === 0) {
     resultSummary.textContent = 'No votes yet.';
@@ -145,19 +121,15 @@ async function updateResults() {
   const rounds = [];
   let remainingCandidates = [...allCandidates];
   let remainingBallots = ballots.map((b) => b.filter((c) => remainingCandidates.includes(c)));
-  const totalVotes = remainingBallots.length; // stable respondents
+  const totalVotes = remainingBallots.length;
   let roundNum = 1;
 
   while (true) {
     const counts = Object.fromEntries(remainingCandidates.map((c) => [c, 0]));
-    for (const ballot of remainingBallots) {
-      if (ballot.length) counts[ballot[0]]++;
-    }
+    for (const ballot of remainingBallots) if (ballot.length) counts[ballot[0]]++;
 
-    // record this counting round with friendly respondent count
     rounds.push({ round: roundNum, counts: { ...counts }, respondents: totalVotes });
 
-    // majority?
     let winner = null;
     for (const [cand, count] of Object.entries(counts)) {
       if (count > remainingBallots.length / 2) { winner = cand; break; }
@@ -169,7 +141,6 @@ async function updateResults() {
       break;
     }
 
-    // eliminate lowest & transfer
     const minVotes = Math.min(...Object.values(counts));
     const toEliminate = Object.keys(counts).filter((cand) => counts[cand] === minVotes);
     remainingCandidates = remainingCandidates.filter((c) => !toEliminate.includes(c));
@@ -190,13 +161,11 @@ function renderResults(rounds) {
     const div = document.createElement('div');
     div.classList.add('results-round');
 
-    // Friendlier header: "Round X • Y ballots"
     const header = document.createElement('h3');
     const ballotsLabel = `${roundData.respondents} ${pluralize(roundData.respondents, 'ballot')}`;
     header.textContent = `Round ${roundData.round} • ${ballotsLabel}`;
     div.appendChild(header);
 
-    // Display candidates sorted by vote count
     const sorted = Object.entries(roundData.counts).sort((a, b) => b[1] - a[1]);
     sorted.forEach(([cand, count]) => {
       const row = document.createElement('div');
@@ -209,10 +178,26 @@ function renderResults(rounds) {
   });
 }
 
-// Realtime subscription (auto-updates on new votes)
+// Realtime subscribe
 supabase
   .channel('public:votes')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, () => updateResults())
-  .subscribe((status) => {
-    if (status === 'SUBSCRIBED') updateResults();
-  });
+  .subscribe((status) => { if (status === 'SUBSCRIBED') updateResults(); });
+
+// Reset poll (two-step confirm → delete all rows)
+// NOTE: Requires a DELETE policy (see SQL below).
+resetPollButton.addEventListener('click', async () => {
+  if (!confirm('This will clear ALL votes for this poll. Continue?')) return;
+  const second = prompt('Type RESET to permanently clear all voting history:');
+  if (second !== 'RESET') return;
+
+  try {
+    const { error } = await supabase.from('votes').delete().neq('id', null);
+    if (error) throw error;
+    await updateResults();
+    alert('All votes cleared.');
+  } catch (err) {
+    console.error('Delete failed (likely RLS). See README/SQL note.', err);
+    alert('Unable to clear votes. You may need to enable a DELETE policy in Supabase (see instructions).');
+  }
+});
