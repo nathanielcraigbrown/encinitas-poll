@@ -188,13 +188,12 @@
     <!-- App logic (unchanged) -->
     <script type="module" src="./script.js"></script>
 
-    <script>
-      // tiny enhancement: add/remove dragging class
-      const list = document.getElementById('options');
-      new Sortable(list, {
-        animation: 150,
-        ghostClass: 'dragging'
-      });
-    </script>
+    // tiny enhancement: add/remove dragging class
+  const list = document.getElementById('options');
+  new Sortable(list, {
+    animation: 150,
+    ghostClass: 'dragging'
+  });
+</script>
   </body>
 </html>
