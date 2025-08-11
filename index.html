@@ -9,25 +9,12 @@
 
     <style>
       :root{
-        /* Sunset / night beach palette */
-        --night:#0b2d3f;        /* deep sky */
-        --dusk:#0e4662;         /* darker teal sky */
-        --ocean:#0b5b76;        /* ocean */
-        --foam:#e6f6ff;         /* foamy highlight */
-        --sunset:#f59e0b;       /* warm accent */
-        --sand:#f5e9d0;         /* beach sand */
-        --border: rgba(255,255,255,.15);
-        --card: rgba(255,255,255,.08);
-        --shadow: 0 16px 32px rgba(0,0,0,.30);
-        --radius:18px;
-        --text:#e9f3f7;
-        --muted:#b8d1dc;
-        --ok:#22c55e;
-        --warn:#f97316;
-        --bad:#ef4444;
+        --night:#0b2d3f; --dusk:#0e4662; --ocean:#0b5b76; --sand:#f5e9d0;
+        --border: rgba(255,255,255,.15); --card: rgba(255,255,255,.08);
+        --shadow: 0 16px 32px rgba(0,0,0,.30); --radius:18px;
+        --text:#e9f3f7; --muted:#b8d1dc; --ok:#22c55e; --warn:#f97316;
       }
-
-      * { box-sizing: border-box; }
+      *{box-sizing:border-box}
       body{
         margin:0; color:var(--text);
         font-family:Nunito, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -36,89 +23,59 @@
           linear-gradient(180deg, var(--night) 0%, var(--dusk) 55%, var(--ocean) 80%, var(--sand) 100%);
         min-height:100vh;
       }
+      .wrap{max-width:980px;margin:0 auto;padding:28px 20px 96px;position:relative}
 
-      .wrap{ max-width:980px; margin:0 auto; padding:28px 20px 96px; position:relative; }
+      .palms{position:absolute;inset:0 0 auto 0;height:180px;pointer-events:none;opacity:.65}
+      .palms svg{width:100%;height:100%;display:block}
 
-      /* Palm silhouettes (decorative) */
-      .palms{ position:absolute; inset:0 0 auto 0; height:180px; pointer-events:none; opacity:.65; }
-      .palms svg{ width:100%; height:100%; display:block; }
+      header{display:flex;flex-direction:column;gap:8px;margin:12px 0 22px;position:relative;z-index:1}
+      h1{margin:0;font-weight:800;letter-spacing:.3px;font-size:clamp(1.7rem,2.2vw + 1rem,2.4rem)}
+      .tag{font-size:.95rem;color:var(--muted)}
 
-      header{ display:flex; flex-direction:column; gap:8px; margin:12px 0 22px; position:relative; z-index:1;}
-      h1{ margin:0; font-weight:800; letter-spacing:.3px; font-size:clamp(1.7rem,2.2vw + 1rem,2.4rem); }
-      .tag{ font-size:.95rem; color:var(--muted); }
-
-      .grid{ display:grid; grid-template-columns:1fr; gap:16px; }
-      @media (min-width:900px){ .grid{ grid-template-columns:1fr 1fr; } }
+      .grid{display:grid;grid-template-columns:1fr;gap:16px}
+      @media (min-width:900px){.grid{grid-template-columns:1fr 1fr}}
 
       .card{
-        background:var(--card);
-        border:1px solid var(--border);
-        border-radius:var(--radius);
-        box-shadow:var(--shadow);
-        padding:16px;
-        backdrop-filter: blur(8px) saturate(1.2);
+        background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+        box-shadow:var(--shadow); padding:16px; backdrop-filter:blur(8px) saturate(1.2)
       }
-      .section-title{ font-size:1.05rem; font-weight:800; margin:0 0 10px; color:#eaf7ff; }
-      .hint{ margin:6px 2px 14px; font-size:.95rem; color:var(--muted); }
+      .section-title{font-size:1.05rem;font-weight:800;margin:0 0 10px}
+      .hint{margin:6px 2px 14px;font-size:.95rem;color:var(--muted)}
 
-      /* Rank list with numeric inputs */
-      #options{ list-style:none; margin:0; padding:0; }
+      #options{list-style:none;margin:0;padding:0}
       #options li{
-        display:grid;
-        grid-template-columns: 1fr 84px;
-        align-items:center;
-        gap:10px;
-        padding:12px 12px 12px 16px;
-        border:1px solid var(--border);
-        border-radius:14px;
-        background:rgba(255,255,255,.06);
+        display:grid; grid-template-columns:1fr 120px; align-items:center; gap:10px;
+        padding:12px 12px 12px 16px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.06)
       }
-      #options li + li{ margin-top:10px; }
-
-      .name{ font-weight:600; }
-
-      .rank{
-        display:flex; align-items:center; gap:8px; justify-self:end;
+      #options li + li{margin-top:10px}
+      .name{font-weight:600}
+      select.rank-select{
+        width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.25);
+        background:#fff; color:#032732; font-weight:800; outline:none
       }
-      .rank label{ font-size:.9rem; color:var(--muted); }
-      .rank input[type="number"]{
-        width:3.6rem; padding:8px 10px; text-align:center; font-weight:800; color:#032732;
-        border-radius:10px; border:1px solid rgba(255,255,255,.25); background:#ffffff;
-        outline:none;
-      }
-      .rank input.bad{ border-color: var(--bad); box-shadow: 0 0 0 3px rgba(239,68,68,.18); }
-      .rank input.ok{ border-color: var(--ok); box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+      select.rank-select.bad{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.18)}
+      select.rank-select.ok{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
 
+      .controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
       .btn{
-        appearance:none; border:0; cursor:pointer; width:100%;
-        padding:12px 16px; border-radius:14px; font-weight:900; color:#032732; letter-spacing:.3px;
-        background: linear-gradient(135deg, #7dd3fc 0%, #60a5fa 60%, #38bdf8 100%);
-        box-shadow: 0 10px 26px rgba(56,189,248,.35);
-        transition: transform .06s ease, box-shadow .15s ease, opacity .2s ease;
+        appearance:none;border:0;cursor:pointer;border-radius:14px;font-weight:900;letter-spacing:.3px;
+        padding:12px 16px;color:#032732;background:linear-gradient(135deg,#7dd3fc 0%,#60a5fa 60%,#38bdf8 100%);
+        box-shadow:0 10px 26px rgba(56,189,248,.35);transition:.15s
       }
-      .btn:hover{ transform:translateY(-1px); box-shadow:0 12px 28px rgba(56,189,248,.42); }
-      .btn:disabled{ opacity:.6; cursor:not-allowed; }
+      .btn:hover{transform:translateY(-1px)}
+      .mini{background:transparent;color:var(--muted);border:1px solid var(--border);padding:10px 12px;border-radius:12px;cursor:pointer}
+      .danger{background:#ef4444;color:#fff;border:0}
 
-      .controls{
-        display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px;
-      }
-      .mini{
-        background:transparent; color:var(--muted); border:1px solid var(--border); padding:8px 10px; border-radius:12px;
-        cursor:pointer;
-      }
+      .results{display:flex;flex-direction:column;gap:12px}
+      .results-round{border:1px solid var(--border);border-radius:14px;padding:12px;background:rgba(255,255,255,.06)}
+      .candidate-count{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+      .candidate-count:last-child{border-bottom:0}
 
-      .results{ display:flex; flex-direction:column; gap:12px; }
-      .results-round{ border:1px solid var(--border); border-radius:14px; padding:12px; background:rgba(255,255,255,.06); }
-      .candidate-count{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08); }
-      .candidate-count:last-child{ border-bottom:0; }
-
-      .wave{ position: fixed; left:0; right:0; bottom:-1px; z-index:0; pointer-events:none;
-        filter: drop-shadow(0 6px 18px rgba(0,0,0,.25)); }
-      .wave svg{ width:100%; display:block; }
+      .wave{position:fixed;left:0;right:0;bottom:-1px;z-index:0;pointer-events:none;filter:drop-shadow(0 6px 18px rgba(0,0,0,.25))}
+      .wave svg{width:100%;display:block}
     </style>
   </head>
   <body>
-    <!-- Decorative palms -->
     <div class="palms" aria-hidden="true">
       <svg viewBox="0 0 1440 180" preserveAspectRatio="none">
         <g transform="translate(80,10) scale(1)">
@@ -139,51 +96,47 @@
     <div class="wrap">
       <header>
         <h1>Post-Site Visit Lunch in Encinitas</h1>
-        <div class="tag">Type numbers 1–4 to rank your lunch picks. Use each number once.</div>
+        <div class="tag">Choose a number 1–4 for each spot. Use each number once.</div>
       </header>
 
       <div class="grid">
-        <!-- Ballot -->
         <section class="card">
           <div class="section-title">Your Ballot</div>
-          <p id="rank-hint" class="hint">Tip: 1 = top choice, 4 = last choice. Use each number once.</p>
+          <p id="rank-hint" class="hint">Tip: 1 = top choice, 4 = last choice. No repeats.</p>
           <ul id="options">
             <li data-value="Union Kitchen and Tap Encinitas">
               <span class="name">Union Kitchen and Tap Encinitas</span>
-              <span class="rank">
-                <label>#</label>
-                <input class="rank-input" type="number" inputmode="numeric" min="1" max="4" placeholder="1–4" />
-              </span>
+              <select class="rank-select">
+                <option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option>
+              </select>
             </li>
             <li data-value="Swami's Cafe Encinitas 101">
               <span class="name">Swami’s Cafe Encinitas 101</span>
-              <span class="rank">
-                <label>#</label>
-                <input class="rank-input" type="number" inputmode="numeric" min="1" max="4" placeholder="1–4" />
-              </span>
+              <select class="rank-select">
+                <option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option>
+              </select>
             </li>
             <li data-value="Encinitas Fish Shop">
               <span class="name">Encinitas Fish Shop</span>
-              <span class="rank">
-                <label>#</label>
-                <input class="rank-input" type="number" inputmode="numeric" min="1" max="4" placeholder="1–4" />
-              </span>
+              <select class="rank-select">
+                <option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option>
+              </select>
             </li>
             <li data-value="URBN Encinitas">
               <span class="name">URBN Encinitas</span>
-              <span class="rank">
-                <label>#</label>
-                <input class="rank-input" type="number" inputmode="numeric" min="1" max="4" placeholder="1–4" />
-              </span>
+              <select class="rank-select">
+                <option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option>
+              </select>
             </li>
           </ul>
+
           <div class="controls">
-            <button id="clear" class="mini" type="button">Clear numbers</button>
-            <button id="submit" class="btn">Submit vote</button>
+            <button id="clear" class="mini" type="button">Clear choices</button>
+            <button id="reset-poll" class="mini danger" type="button">Reset poll (clear all votes)</button>
+            <button id="submit" class="btn" type="button">Submit vote</button>
           </div>
         </section>
 
-        <!-- Results -->
         <section class="card">
           <div class="section-title">Live Results</div>
           <p id="result-summary" class="hint">Updating in real time.</p>
@@ -192,7 +145,6 @@
       </div>
     </div>
 
-    <!-- Shoreline -->
     <div class="wave" aria-hidden="true">
       <svg viewBox="0 0 1440 130" preserveAspectRatio="none">
         <path d="M0,50 C240,110 480,20 720,50 C960,80 1200,110 1440,70 L1440,130 L0,130 Z" fill="#ffffff" opacity=".9"/>
@@ -200,7 +152,6 @@
       </svg>
     </div>
 
-    <!-- App logic -->
     <script type="module" src="./script.js"></script>
   </body>
 </html>
